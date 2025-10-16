@@ -123,15 +123,15 @@
     overlay.appendChild(globalCloseButton);
 
     /**
-     * 
-     * @returns {Promise<{mode: string, delay: number, scanMode: string, constThreshold: number}>} - 選択された設定を解決するPromise
+     * * @returns {Promise<{mode: string, delay: number, scanMode: string, bestConstThreshold: number, newConstThreshold: number}>} - 選択された設定を解決するPromise
      */
     const askForSettings = () => {
         return new Promise(resolve => {
             let selectedMode = null;
             let selectedScanMode = 'paid'; // デフォルトは有料ユーザーね
             let scrapeDelay = 1.0;
-            let constThreshold = 14.5;
+            let bestConstThreshold = 14.0; // ベスト枠用のデフォルト値
+            let newConstThreshold = 14.5; // 新曲枠用のデフォルト値
 
             const container = document.createElement('div');
             container.style.cssText = `
@@ -196,29 +196,52 @@
             container.appendChild(scanModeSection);
 
             // 無料ユーザーはconstantの最小値を設定しないと恐ろしいことになるよ
-            const constLabel = document.createElement('label');
-            constLabel.textContent = 'レーティング対象にする譜面定数の最小値';
-            constLabel.style.cssText = 'display: block; font-size: 16px; color: #D0D0D0; margin-bottom: 10px;';
-            constThresholdSection.appendChild(constLabel);
-            const constInput = document.createElement('input');
-            constInput.type = 'number';
-            constInput.value = constThreshold;
-            constInput.min = '13.0';
-            constInput.max = '15.4';
-            constInput.step = '0.1';
-            constInput.style.cssText = `
-                width: 100px; padding: 8px; font-size: 18px; text-align: center;
-                background-color: #222; color: white; border: 1px solid #555; border-radius: 5px;
-            `;
-            constInput.onchange = () => {
-                const val = parseFloat(constInput.value);
-                if (!isNaN(val) && val >= 13.0 && val <= 15.4) {
-                    constThreshold = val;
-                } else {
-                    constInput.value = constThreshold;
-                }
+            const constInputsContainer = document.createElement('div');
+            constInputsContainer.style.cssText = 'display: flex; justify-content: center; gap: 30px; align-items: center;';
+
+            // ベスト枠・新曲枠用の入力を作成するヘルパー関数
+            const createConstInput = (labelText, value, callback) => {
+                const wrapper = document.createElement('div');
+                const label = document.createElement('label');
+                label.textContent = labelText;
+                label.style.cssText = 'display: block; font-size: 16px; color: #D0D0D0; margin-bottom: 10px;';
+                wrapper.appendChild(label);
+
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.value = value;
+                input.min = '13.0';
+                input.max = '15.4';
+                input.step = '0.1';
+                input.style.cssText = `
+                    width: 100px; padding: 8px; font-size: 18px; text-align: center;
+                    background-color: #222; color: white; border: 1px solid #555; border-radius: 5px;
+                `;
+                input.onchange = () => {
+                    const val = parseFloat(input.value);
+                    if (!isNaN(val) && val >= 13.0 && val <= 15.4) {
+                        callback(val);
+                    } else {
+                        input.value = callback(null); // 不正な値は元の値に戻す
+                    }
+                };
+                wrapper.appendChild(input);
+                return wrapper;
             };
-            constThresholdSection.appendChild(constInput);
+
+            const bestInputWrapper = createConstInput('BEST枠 最小値', bestConstThreshold, (val) => {
+                if (val !== null) bestConstThreshold = val;
+                return bestConstThreshold;
+            });
+            const newIputWrapper = createConstInput('新曲枠 最小値', newConstThreshold, (val) => {
+                if (val !== null) newConstThreshold = val;
+                return newConstThreshold;
+            });
+
+            constInputsContainer.appendChild(bestInputWrapper);
+            constInputsContainer.appendChild(newIputWrapper);
+            constThresholdSection.appendChild(constInputsContainer);
+
             const freeModeWarning = document.createElement('p');
             freeModeWarning.innerHTML = '⚠️ <strong>注意:</strong> 無料ユーザーモードは公式サイトの楽曲ランキングから全曲のスコアを取得するため、完了までに<strong>数分以上</strong>かかる場合があります<br>また大量にアクセスするため、取得間隔によってはCHUNITHM-NETのサーバーに負荷をかける可能性があります';// CHUNITHM-NETのサーバーがどれだけの強度を誇るのかはわからない
             freeModeWarning.style.cssText = 'font-size: 14px; margin-top: 15px; color: #FFC107; background-color: rgba(255, 193, 7, 0.1); padding: 10px; border-radius: 5px; border: 1px solid rgba(255, 193, 7, 0.3);';
@@ -347,7 +370,7 @@
             generateButton.onmouseout = () => { if (!generateButton.disabled) generateButton.style.background = 'linear-gradient(145deg, #5cb85c, #4cae4c)'; };
             generateButton.onclick = () => {
                 if (selectedMode && selectedScanMode) {
-                    resolve({ mode: selectedMode, delay: scrapeDelay, scanMode: selectedScanMode, constThreshold });
+                    resolve({ mode: selectedMode, delay: scrapeDelay, scanMode: selectedScanMode, bestConstThreshold, newConstThreshold });
                 }
             };
             container.appendChild(generateButton);
@@ -507,7 +530,7 @@
     /**
      * 無料ユーザー向けの楽曲データ取得
      */
-    const fetchAllSongsForFreeUser = async (constThreshold, delay, constData) => {
+    const fetchAllSongsForFreeUser = async (bestConstThreshold, newConstThreshold, delay, constData) => {
         updateMessage("ランキングページにアクセス中...", 5);
         const token = document.cookie.split('; ').find(row => row.startsWith('_t=')).split('=')[1];
         await fetch(URL_RANKING_MASTER_SEND, {
@@ -537,7 +560,10 @@
         const diffMap = { 'MAS': '3', 'EXP': '2', 'ULT': '4' };
 
         for (const songData of constData) {
-            if (songData.const >= constThreshold) {
+            const isNewSong = songData.version === CURRENT_VERSION;
+            const threshold = isNewSong ? newConstThreshold : bestConstThreshold;
+
+            if (songData.const >= threshold) {
                 const initialSong = initialSongList.find(s => s.title === songData.title);
                 if (initialSong && diffMap[songData.diff]) {
                     const songObject = {
@@ -549,8 +575,8 @@
                         playCount: 'N/A',
                         params: { ...initialSong.params, diff: diffMap[songData.diff] }
                     };
-                    // ★★★ バージョンで新旧を振り分け ★★★
-                    if (songData.version === CURRENT_VERSION) {
+                    
+                    if (isNewSong) {
                         filteredNewSongs.push(songObject);
                     } else {
                         filteredOldSongs.push(songObject);
@@ -1080,7 +1106,7 @@
 
     // --- メイン処理 ---
     try {
-        const { mode, delay, scanMode, constThreshold } = await askForSettings();
+        const { mode, delay, scanMode, bestConstThreshold, newConstThreshold } = await askForSettings();
 
         if (isAborted) return;
 
@@ -1126,8 +1152,8 @@
         let finalRecentList = [];
 
         if (scanMode === 'free') {
-            updateMessage(`無料モード: ランキングから定数${constThreshold}以上の曲を検索します...`, 12);
-            const result = await fetchAllSongsForFreeUser(constThreshold, delay, constData);
+            updateMessage(`無料モード: ランキングから曲を検索します...`, 12);
+            const result = await fetchAllSongsForFreeUser(bestConstThreshold, newConstThreshold, delay, constData);
             if (isAborted || !result) return;
             
             const { detailedNewSongs, detailedOldSongs } = result;
