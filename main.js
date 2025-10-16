@@ -993,13 +993,14 @@
             renderSongList("NEW", songsWithImages.slice(bestList.length), recentStartX, listsStartY, COLS, BLOCK_WIDTH);
         }
 
-        const footerFontSize = 32; 
-        const lineHeight = 42;     
+        // --- フッター描画 ---
+        const footerFontSize = 40; 
+        const lineHeight = 52;     
 
         ctx.font = `bold ${footerFontSize}px ${FONT_FAMILY}`;
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+        ctx.fillStyle = 'rgba(71, 71, 71, 0.7)';
         ctx.textAlign = 'right';
-        
+
         const footerX = canvas.width - PADDING;
         const secondLineY = canvas.height - PADDING + 10;
         const firstLineY = secondLineY - lineHeight;
