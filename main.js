@@ -130,8 +130,8 @@
             let selectedMode = null;
             let selectedScanMode = 'paid'; // デフォルトは有料ユーザーね
             let scrapeDelay = 1.0;
-            let bestConstThreshold = 14.0; // ベスト枠用のデフォルト値
-            let newConstThreshold = 14.5; // 新曲枠用のデフォルト値
+            let bestConstThreshold = 14.5; // ベスト枠用のデフォルト値
+            let newConstThreshold = 13.5; // 新曲枠用のデフォルト値
 
             const container = document.createElement('div');
             container.style.cssText = `
@@ -229,17 +229,17 @@
                 return wrapper;
             };
 
-            const bestInputWrapper = createConstInput('BEST枠 最小値', bestConstThreshold, (val) => {
+            const bestInputWrapper = createConstInput('BEST枠 最小定数', bestConstThreshold, (val) => {
                 if (val !== null) bestConstThreshold = val;
                 return bestConstThreshold;
             });
-            const newIputWrapper = createConstInput('新曲枠 最小値', newConstThreshold, (val) => {
+            const newInputWrapper = createConstInput('新曲枠 最小定数', newConstThreshold, (val) => {
                 if (val !== null) newConstThreshold = val;
                 return newConstThreshold;
             });
 
             constInputsContainer.appendChild(bestInputWrapper);
-            constInputsContainer.appendChild(newIputWrapper);
+            constInputsContainer.appendChild(newInputWrapper);
             constThresholdSection.appendChild(constInputsContainer);
 
             const freeModeWarning = document.createElement('p');
@@ -597,7 +597,7 @@
                 const song = list[i];
                 const progress = startProgress + (i / total) * progressShare;
                 if (i > 0 && delay > 0) {
-                    updateMessage(`待機中... (${delay.toFixed(1)}秒)`, progress);
+                    updateMessage(`待機中... (${delay.toFixed(1)}秒) - (${i}/${total})`, progress);
                     await sleep(delay * 1000);
                 }
                 if (isAborted) break;
