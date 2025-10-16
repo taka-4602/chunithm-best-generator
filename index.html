@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CHUNITHM-BEST-GENERATOR</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Source+Code+Pro&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>ブックマークレットの使い方</h1>
+            <p>このページでは、CHUNITHM-NETのベスト枠 / 新曲枠を画像化するブックマークレットの使い方を説明します。</p>
+        </header>
+
+        <section id="bookmarklet-code">
+            <h2>1. コードをコピー</h2>
+            <p>まず、ブックマークレットのコードをコピーしてください。</p>
+            <div class="code-block">
+                <pre id="code-to-copy">javascript:(function(){
+    const script = document.createElement('script');
+    script.src = "https://taka-4602.github.io/chunithm-best-generator/main.js?" + new Date().getTime();
+    document.body.appendChild(script);
+})();</pre>
+            </div>
+            <button id="copy-button">コードをコピー</button>
+        </section>
+
+        <section id="desktop-instructions">
+            <h2>2. 登録方法を選択</h2>
+
+            <div class="platform-tabs">
+                 <button class="tab-button active" data-platform="desktop">PC (Chromium based / Firefox)</button>
+                <button class="tab-button" data-platform="android">Android (Chrome)</button>
+                <button class="tab-button" data-platform="ios">iPhone / iPad (Safari)</button>
+            </div>
+
+            <div class="instructions active" id="desktop">
+                <h3>💻 PC (Chromium based / Firefox)</h3>
+                <p class="note">※ Windows, macOS, Linux Distro 共通の手順です。</p>
+                <ol>
+                    <li>ブラウザのブックマークバーを右クリックし「ページを追加」や、「ブックマークを追加」を選択します。</li>
+                    <li>「名前」の欄に分かりやすい名前（例: CHUNITHMツール）を入力することができます。</li>
+                    <li>「URL」の欄に、先ほどコピーしたコードを貼り付けます。</li>
+                    <li>「保存」をクリックすれば、ブックマークバーに登録されます。</li>
+                    <li>CHUNITHM-NETを開いた状態で、登録したブックマークをクリックすると実行されます。</li>
+                </ol>
+                 
+            </div>
+            
+            <div class="instructions" id="android">
+                <h3>🤖 Android (Chrome)</h3>
+                <ol>
+                    <li>まず、<strong class="highlight">このページ（どのページでも可）を</strong>普通にブックマークに追加します。</li>
+                    <li>ブックマーク一覧を開き、追加したブックマークの横にある︙（メニューボタン）をタップして「編集」を選択します。</li>
+                    <li>「名前」を分かりやすいもの（例: CHUNITHMツール）に変更することができます。</li>
+                    <li>「URL」の欄の<strong class="highlight">中身を全て消去</strong>し、コピーしたコードを貼り付けます。</li>
+                    <li>右上の←で戻り、保存します。</li>
+                    <li>CHUNITHM-NETを開いた状態で、アドレスバーに今つけた名前を入力し、候補に表示されるブックマーク（★マーク付き）をタップすると実行できます。</li>
+                </ol>
+                
+            </div>
+
+            <div class="instructions" id="ios">
+                <h3>📱 iOS (Safari)</h3>
+                <ol>
+                    <li>まず、<strong class="highlight">このページ（どのページでも可）を</strong>普通にブックマークに追加します。</li>
+                    <li>ブックマークを開き、右下の「編集」をタップします。</li>
+                    <li>先ほど追加したブックマークをタップして編集画面を開きます。</li>
+                    <li>名前を分かりやすいもの（例: CHUNITHMツール）に変更することができます。</li>
+                    <li>URLが表示されている部分をタップし、<strong class="highlight">中身を全て消去</strong>してから、コピーしたコードを貼り付けます。</li>
+                    <li>「完了」をタップして保存します。</li>
+                    <li>CHUNITHM-NETを開いた状態で、アドレスバーに今つけた名前を入力し、候補に表示されるブックマークをタップすると実行できます。</li>
+                </ol>
+                 
+            </div>
+        </section>
+
+        <section id="precautions">
+            <h2>注意事項</h2>
+            <ul>
+                <li>本ツールは非公式です。CHUNITHM-NETの仕様変更やアップデートにより突然動作しなくなる場合があります。</li>
+                <li>本ツールが通信する先は以下のみで、すべてのデータを開発者サーバー等の第三者へ送信しません。
+                    <ul>
+                        <li>CHUNITHM-NET</li>
+                        <li>GitHub</li>
+                    </ul>
+                </li>
+                <li>CHUNITHM-NETのサーバー負荷やレートリミットに配慮し、取得間隔を適切に設定してください。</li>
+                <li>疑問があったらGitHubからソースコードをダウンロードしてGPTやGeminiなどのLLMに質問してください。</li>
+            </ul>
+
+        </section>
+        <section id="source-code">
+            <h2>ソースコード</h2>
+            <p>このブックマークレットのソースコードはGitHubで公開されています。</p>
+            <a href="https://github.com/taka-4602/chunithm-best-generator" target="_blank" rel="noopener noreferrer" class="github-button">
+                GitHubでソースコードを見る
+            </a>
+        </section>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

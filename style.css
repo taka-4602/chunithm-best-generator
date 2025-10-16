@@ -1,0 +1,202 @@
+:root {
+    --bg-color: #121212;
+    --primary-color: #1e1e1e;
+    --secondary-color: #2a2a2a;
+    --font-color: #e0e0e0;
+    --accent-color: #03dac6;
+    --accent-hover: #018786;
+    --github-color: #333;
+    --github-hover: #444;
+}
+
+body {
+    font-family: 'Noto Sans JP', 'Source Code Pro', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--font-color);
+    line-height: 1.8;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 800px;
+    width: 100%;
+    background-color: var(--primary-color);
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeIn 0.8s forwards ease-out;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+h1, h2, h3 {
+    color: var(--accent-color);
+    border-left: 4px solid var(--accent-color);
+    padding-left: 15px;
+    margin-top: 40px;
+}
+
+h1 {
+    text-align: center;
+    border-left: none;
+    padding-left: 0;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+p {
+    margin-bottom: 20px;
+}
+
+.code-block {
+    background-color: var(--secondary-color);
+    border-radius: 8px;
+    padding: 20px;
+    overflow-x: auto;
+    border: 1px solid #444;
+}
+
+pre {
+    color: #f1f1f1;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    margin: 0;
+    font-family: 'Source Code Pro', monospace; 
+    font-size: 0.95em;
+    line-height: 1.6;
+}
+
+#copy-button {
+    display: block;
+    width: 100%;
+    margin-top: 15px;
+    background-color: var(--accent-color);
+    color: #000;
+    border: none;
+    padding: 12px 22px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1.1em;
+    text-align: center;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+#copy-button:hover {
+    background-color: var(--accent-hover);
+    transform: scale(1.01);
+}
+
+#copy-button:active {
+    transform: scale(0.99);
+}
+
+.platform-tabs {
+    display: flex;
+    border-bottom: 1px solid #444;
+    margin-bottom: 20px;
+}
+
+.tab-button {
+    padding: 10px 20px;
+    cursor: pointer;
+    background-color: transparent;
+    border: none;
+    color: var(--font-color);
+    font-size: 1em;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s;
+}
+
+.tab-button.active {
+    color: var(--accent-color);
+    border-bottom: 3px solid var(--accent-color);
+}
+
+.instructions {
+    display: none;
+}
+
+.instructions.active {
+    display: block;
+    animation: slideIn 0.5s forwards ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+ol, ul {
+    background-color: var(--secondary-color);
+    padding: 20px 20px 20px 40px;
+    border-radius: 8px;
+    border: 1px solid #444;
+}
+
+li {
+    margin-bottom: 15px;
+}
+
+.highlight {
+    color: var(--accent-color);
+    font-weight: 700;
+}
+
+.note {
+    font-style: italic;
+    color: #aaa;
+    background-color: var(--secondary-color);
+    padding: 10px;
+    border-left: 3px solid #666;
+    border-radius: 4px;
+}
+
+.github-button {
+    display: inline-block;
+    padding: 12px 25px;
+    background-color: var(--github-color);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    text-align: center;
+    transition: background-color 0.3s, transform 0.2s;
+    border: 1px solid #555;
+}
+
+.github-button:hover {
+    background-color: var(--github-hover);
+    transform: scale(1.02);
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 20px;
+    }
+    .platform-tabs {
+        flex-direction: column;
+    }
+    .tab-button {
+        width: 100%;
+        text-align: left;
+    }
+}
