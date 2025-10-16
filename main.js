@@ -986,7 +986,7 @@
                 current_y += 30;
                 drawDataRow('プレイ回数', song.playCount || 'N/A', current_y);
                 current_y += 32;
-                drawDataRow('RATING', song.rating.toFixed(4), current_y, '#81D4FA', `bold 22px ${FONT_FAMILY}`);
+                drawDataRow('RATING', song.rating.toFixed(2), current_y, '#81D4FA', `bold 22px ${FONT_FAMILY}`);
             });
         };
 
