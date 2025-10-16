@@ -4,7 +4,7 @@
 
     const GITHUB_USER = "taka-4602";
     const GITHUB_REPO = "chunithm-best-generator";
-    const CONST_DATA_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/chunirec.json`;
+    const CONST_DATA_URL = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/chunithm.json`;
 
     const BASE_URL = "https://new.chunithm-net.com/chuni-mobile/html/mobile/";
     const URL_PLAYER_DATA = BASE_URL + "home/playerData/";
