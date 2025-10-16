@@ -1005,7 +1005,7 @@
         const secondLineY = canvas.height - PADDING + 10;
         const firstLineY = secondLineY - lineHeight;
 
-        ctx.fillText('CHUNITHM非公式ジェネレーターによって生成されました', footerX, firstLineY);
+        ctx.fillText('非公式ジェネレーターによって生成されました', footerX, firstLineY);
         ctx.fillText('https://chunithm.fun', footerX, secondLineY);
 
         // --- 結果表示 ---
