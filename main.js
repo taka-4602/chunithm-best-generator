@@ -479,15 +479,26 @@
     const calculateRating = (score, constant) => {
         if (!constant) return 0.0;
         constant = parseFloat(constant);
-        if (score >= 1009000) return constant + 2.15;
-        if (score >= 1007500) return constant + 2.0 + (score - 1007500) * 0.0001;
-        if (score >= 1005000) return constant + 1.5 + (score - 1005000) * 0.0002;
-        if (score >= 1000000) return constant + 1.0 + (score - 1000000) * 0.0001;
-        if (score >= 975000) return constant + (score - 975000) / 25000;
-        if (score >= 950000) return constant - 1.5 + (score - 950000) / 25000 * 1.5;
-        if (score >= 925000) return constant - 3.0 + (score - 925000) / 25000 * 1.5;
-        if (score >= 900000) return constant - 5.0 + (score - 900000) / 25000 * 2.0;
-        return 0.0;
+        let ratingValue = 0.0;
+        if (score >= 1009000) {
+            ratingValue = constant + 2.15;
+        } else if (score >= 1007500) {
+            ratingValue = constant + 2.0 + (score - 1007500) * 0.0001;
+        } else if (score >= 1005000) {
+            ratingValue = constant + 1.5 + (score - 1005000) * 0.0002;
+        } else if (score >= 1000000) {
+            ratingValue = constant + 1.0 + (score - 1000000) * 0.0001;
+        } else if (score >= 975000) {
+            ratingValue = constant + (score - 975000) / 25000;
+        } else if (score >= 950000) {
+            ratingValue = constant - 1.5 + (score - 950000) / 25000 * 1.5;
+        } else if (score >= 925000) {
+            ratingValue = constant - 3.0 + (score - 925000) / 25000 * 1.5;
+        } else if (score >= 900000) {
+            ratingValue = constant - 5.0 + (score - 900000) / 25000 * 2.0;
+        }
+
+        return Math.round(ratingValue * 100) / 100;
     };
     const getRankInfo = (score) => {
         if (score >= 1009000) return { rank: "SSS+", color: "#FFD700" };
