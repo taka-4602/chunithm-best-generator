@@ -967,13 +967,13 @@
             renderSongList("NEW", songsWithImages.slice(bestList.length), recentStartX, listsStartY, COLS, BLOCK_WIDTH);
         }
 
-        const footerFontSize = 26;
-        const lineHeight = 35;
+        const footerFontSize = 32; 
+        const lineHeight = 42;     
 
-        ctx.font = `${footerFontSize}px ${FONT_FAMILY}`;
-        ctx.fillStyle = 'rgba(70, 69, 69, 0.7)';
+        ctx.font = `bold ${footerFontSize}px ${FONT_FAMILY}`;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
         ctx.textAlign = 'right';
-
+        
         const footerX = canvas.width - PADDING;
         const secondLineY = canvas.height - PADDING + 10;
         const firstLineY = secondLineY - lineHeight;
