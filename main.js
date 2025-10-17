@@ -744,16 +744,13 @@
             const total = list.reduce((sum, song) => sum + song.rating, 0);
             return total / list.length;
         };*/
-        const calculateAverageRating = (list, count) => {
-            if (!list || list.length === 0 || count === 0) {
+        const calculateAverageRating = (list) => {
+            if (!list || list.length === 0) {
                 return 0.0;
             }
 
-            const total = list.reduce((sum, song) => sum + parseFloat(song.rating || 0), 0);
-            
-            const divisor = Math.min(list.length, count);
-            
-            return total / divisor;
+            const total = list.reduce((sum, song) => sum + (song.rating ?? 0), 0);
+            return total / list.length;
         };
 
         // --- レイアウト定数 --- デザインは僕のはんちゅう外だから、概要だけ伝えてAIに決めてもらった。コメントはそのまま残す
