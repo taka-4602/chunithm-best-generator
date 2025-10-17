@@ -476,6 +476,7 @@
         }
         return { artist, jacketUrl, playCount };
     };
+    /*
     const calculateRating = (score, constant) => {
         if (!constant) return 0.0;
         constant = parseFloat(constant);
@@ -499,7 +500,35 @@
         }
 
         return Math.round(ratingValue * 100) / 100;
+    };:*/
+    const calculateRating = (score, constant) => {
+        if (!constant) return 0.0;
+        constant = parseFloat(constant);
+
+        let ratingValue = 0.0;
+
+        if (score >= 1009000) {
+            ratingValue = constant + 2.15;
+        }
+        else if (score >= 1007500) {
+            ratingValue = constant + 2.0;
+        }
+        else if (score >= 1005000) {
+            ratingValue = constant + 1.5 + (score - 1005000) * 0.0002;
+        }
+        else if (score >= 1000000) {
+            ratingValue = constant + 1.0 + (score - 1000000) * 0.0001;
+        }
+        else if (score >= 975000) {
+            ratingValue = constant + (score - 975000) / 25000;
+        }
+        else {
+            ratingValue = constant - 3 * (975000 - score) / 250000;
+        }
+
+        return Math.floor(ratingValue * 100) / 100;
     };
+
     const getRankInfo = (score) => {
         if (score >= 1009000) return { rank: "SSS+", color: "#FFD700" };
         if (score >= 1007500) return { rank: "SSS", color: "#ffdf75" };
@@ -710,10 +739,19 @@
             return { finalY: currentY, lines: lineCount };
         };
 
-        const calculateAverageRating = (list) => {
+        /*const calculateAverageRating = (list) => {
             if (!list || list.length === 0) return 0.0;
             const total = list.reduce((sum, song) => sum + song.rating, 0);
             return total / list.length;
+        };*/
+        const calculateAverageRating = (list, count) => {
+            if (!list || list.length === 0 || count === 0) {
+                return 0.0;
+            }
+
+            const total = list.reduce((sum, song) => sum + (song.rating || 0), 0);
+            const divisor = Math.min(list.length, count);
+            return total / divisor;
         };
 
         // --- レイアウト定数 --- デザインは僕のはんちゅう外だから、概要だけ伝えてAIに決めてもらった。コメントはそのまま残す
