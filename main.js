@@ -749,8 +749,10 @@
                 return 0.0;
             }
 
-            const total = list.reduce((sum, song) => sum + (song.rating || 0), 0);
+            const total = list.reduce((sum, song) => sum + parseFloat(song.rating || 0), 0);
+            
             const divisor = Math.min(list.length, count);
+            
             return total / divisor;
         };
 
