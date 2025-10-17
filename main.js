@@ -1,6 +1,6 @@
 (async function() {
     'use strict';
-    const CURRENT_VERSION = "X-VERSE";
+    //const CURRENT_VERSION = "X-VERSE";
 
     const GITHUB_USER = "taka-4602";
     const GITHUB_REPO = "chunithm-best-generator";
@@ -12,13 +12,6 @@
     const URL_RATING_RECENT = URL_PLAYER_DATA + "ratingDetailRecent/";
     const URL_SEND_DETAIL = BASE_URL + "record/musicGenre/sendMusicDetail/";
     const URL_DETAIL = BASE_URL + "record/musicDetail/";
-    const URL_RANKING_MASTER_SEND = BASE_URL + "ranking/sendMaster/";
-    const URL_RANKING_MASTER = BASE_URL + "ranking/master/";
-    const URL_RANKING_DETAIL_SEND = BASE_URL + "ranking/sendRankingDetail/";
-    const URL_RANKING_DETAIL = BASE_URL + "ranking/musicRankingDetail/";
-    const URL_RANKING_ULTIMA_SEND = URL_RANKING_DETAIL + "sendRankingUltima/";
-    const URL_RANKING_EXPERT_SEND = URL_RANKING_DETAIL + "sendRankingExpert/";
-
 
     let isAborted = false;
 
@@ -71,11 +64,6 @@
                 50% { box-shadow: 0 0 16px #6fdc6f, 0 0 24px #6fdc6f; }
                 100% { box-shadow: 0 0 8px #5cb85c, 0 0 12px #5cb85c; }
             }
-            @keyframes backgroundShine {
-                0% { background-position: 0% 50%; }
-                50% { background-position: 100% 50%; }
-                100% { background-position: 0% 50%; }
-            }
         `;
         document.head.appendChild(style);
     };
@@ -123,15 +111,12 @@
     overlay.appendChild(globalCloseButton);
 
     /**
-     * * @returns {Promise<{mode: string, delay: number, scanMode: string, bestConstThreshold: number, newConstThreshold: number}>} - 選択された設定を解決するPromise
+     * @returns {Promise<{mode: string, delay: number}>} - 選択された設定を解決するPromise
      */
     const askForSettings = () => {
         return new Promise(resolve => {
             let selectedMode = null;
-            let selectedScanMode = 'paid'; // デフォルトは有料ユーザーね
             let scrapeDelay = 1.0;
-            let bestConstThreshold = 14.5; // ベスト枠用のデフォルト値
-            let newConstThreshold = 13.5; // 新曲枠用のデフォルト値
 
             const container = document.createElement('div');
             container.style.cssText = `
@@ -144,110 +129,13 @@
 
             const title = document.createElement('h2');
             title.textContent = 'CHUNITHM 画像ジェネレーター設定';
-           title.style.cssText = 'font-size: 28px; margin-bottom: 15px; font-weight: bold; color: #E0E0E0; line-height: 1.4;';
+            title.style.cssText = 'font-size: 28px; margin-bottom: 15px; font-weight: bold; color: #E0E0E0; line-height: 1.4;';
             container.appendChild(title);
 
             const subtitle = document.createElement('p');
-            subtitle.innerHTML = '動作モード、画像レイアウト、取得間隔を設定してください <br> 取得間隔によってはCHUNITHM-NETのサーバーに負荷をかける可能性があります';
+            subtitle.innerHTML = '画像レイアウトと取得間隔を設定してください';
             subtitle.style.cssText = 'font-size: 16px; margin-bottom: 30px; color: #B0B0B0;';
             container.appendChild(subtitle);
-
-            // 選択画面のUIとか
-            const scanModeSection = document.createElement('div');
-            scanModeSection.style.cssText = 'margin-bottom: 30px;';
-            const scanModeLabel = document.createElement('label');
-            scanModeLabel.textContent = '動作モード';
-            scanModeLabel.style.cssText = 'display: block; font-size: 18px; font-weight: bold; color: #D0D0D0; margin-bottom: 15px;';
-            scanModeSection.appendChild(scanModeLabel);
-            const scanModeButtonsContainer = document.createElement('div');
-            scanModeButtonsContainer.style.cssText = 'display: flex; justify-content: center; gap: 20px;';
-            const constThresholdSection = document.createElement('div');
-            constThresholdSection.style.cssText = 'margin-top: 25px; display: none;';
-
-            const createScanModeButton = (text, scanMode) => {
-                const button = document.createElement('button');
-                button.innerHTML = text;
-                button.dataset.scanMode = scanMode;
-                button.style.cssText = `
-                    flex: 1; padding: 15px; font-size: 16px; font-weight: bold; cursor: pointer;
-                    background-color: #333; color: white; border: 2px solid #555; border-radius: 8px;
-                    transition: all 0.2s ease-out;
-                `;
-                button.onclick = () => {
-                    selectedScanMode = scanMode;
-                    updateScanModeButtons();
-                    checkIfReady();
-                };
-                return button;
-            };
-
-            const updateScanModeButtons = () => {
-                 document.querySelectorAll('button[data-scan-mode]').forEach(btn => {
-                    const isSelected = btn.dataset.scanMode === selectedScanMode;
-                    btn.style.backgroundColor = isSelected ? '#4A90E2' : '#333';
-                    btn.style.borderColor = isSelected ? '#6FBFFF' : '#555';
-                });
-                constThresholdSection.style.display = selectedScanMode === 'free' ? 'block' : 'none';
-            };
-
-            scanModeButtonsContainer.appendChild(createScanModeButton('通常モード<br><small>(Rating準拠 / 課金ユーザー)</small>', 'paid'));
-            scanModeButtonsContainer.appendChild(createScanModeButton('無料モード<br><small>(全曲スキャン / 無料ユーザー)</small>', 'free'));
-            scanModeSection.appendChild(scanModeButtonsContainer);
-            container.appendChild(scanModeSection);
-
-            // 無料ユーザーはconstantの最小値を設定しないと恐ろしいことになるよ
-            const constInputsContainer = document.createElement('div');
-            constInputsContainer.style.cssText = 'display: flex; justify-content: center; gap: 30px; align-items: center;';
-
-            // ベスト枠・新曲枠用の入力を作成するヘルパー関数
-            const createConstInput = (labelText, value, callback) => {
-                const wrapper = document.createElement('div');
-                const label = document.createElement('label');
-                label.textContent = labelText;
-                label.style.cssText = 'display: block; font-size: 16px; color: #D0D0D0; margin-bottom: 10px;';
-                wrapper.appendChild(label);
-
-                const input = document.createElement('input');
-                input.type = 'number';
-                input.value = value;
-                input.min = '13.0';
-                input.max = '15.4';
-                input.step = '0.1';
-                input.style.cssText = `
-                    width: 100px; padding: 8px; font-size: 18px; text-align: center;
-                    background-color: #222; color: white; border: 1px solid #555; border-radius: 5px;
-                `;
-                input.onchange = () => {
-                    const val = parseFloat(input.value);
-                    if (!isNaN(val) && val >= 13.0 && val <= 15.4) {
-                        callback(val);
-                    } else {
-                        input.value = callback(null); // 不正な値は元の値に戻す
-                    }
-                };
-                wrapper.appendChild(input);
-                return wrapper;
-            };
-
-            const bestInputWrapper = createConstInput('BEST枠 最小定数', bestConstThreshold, (val) => {
-                if (val !== null) bestConstThreshold = val;
-                return bestConstThreshold;
-            });
-            const newInputWrapper = createConstInput('新曲枠 最小定数', newConstThreshold, (val) => {
-                if (val !== null) newConstThreshold = val;
-                return newConstThreshold;
-            });
-
-            constInputsContainer.appendChild(bestInputWrapper);
-            constInputsContainer.appendChild(newInputWrapper);
-            constThresholdSection.appendChild(constInputsContainer);
-
-            const freeModeWarning = document.createElement('p');
-            freeModeWarning.innerHTML = '⚠️ <strong>注意:</strong> 無料ユーザーモードは公式サイトの楽曲ランキングから全曲のスコアを取得するため、完了までに<strong>数分以上</strong>かかる場合があります<br>また大量にアクセスするため、取得間隔によってはCHUNITHM-NETのサーバーに負荷をかける可能性があります';// CHUNITHM-NETのサーバーがどれだけの強度を誇るのかはわからない
-            freeModeWarning.style.cssText = 'font-size: 14px; margin-top: 15px; color: #FFC107; background-color: rgba(255, 193, 7, 0.1); padding: 10px; border-radius: 5px; border: 1px solid rgba(255, 193, 7, 0.3);';
-            constThresholdSection.appendChild(freeModeWarning);
-            container.appendChild(constThresholdSection);
-
 
             // Chunithm-netへの負荷軽減だったり、レートリミット対策だったり
             const delaySection = document.createElement('div');
@@ -301,7 +189,6 @@
             delaySection.appendChild(delayControls);
             container.appendChild(delaySection);
 
-
             // 個人的には横派
             const modeSection = document.createElement('div');
             modeSection.style.cssText = 'margin-bottom: 40px;';
@@ -348,10 +235,9 @@
             modeSection.appendChild(modeButtonsContainer);
             container.appendChild(modeSection);
 
-
             // 無駄に目立たせてみた開始ボタン
             const checkIfReady = () => {
-                if (selectedMode && selectedScanMode) {
+                if (selectedMode) {
                     generateButton.disabled = false;
                     generateButton.style.opacity = '1';
                     generateButton.style.cursor = 'pointer';
@@ -369,8 +255,8 @@
             generateButton.onmouseover = () => { if (!generateButton.disabled) generateButton.style.background = 'linear-gradient(145deg, #4cae4c, #449d44)'; };
             generateButton.onmouseout = () => { if (!generateButton.disabled) generateButton.style.background = 'linear-gradient(145deg, #5cb85c, #4cae4c)'; };
             generateButton.onclick = () => {
-                if (selectedMode && selectedScanMode) {
-                    resolve({ mode: selectedMode, delay: scrapeDelay, scanMode: selectedScanMode, bestConstThreshold, newConstThreshold });
+                if (selectedMode) {
+                    resolve({ mode: selectedMode, delay: scrapeDelay });
                 }
             };
             container.appendChild(generateButton);
@@ -378,9 +264,6 @@
             overlay.innerHTML = '';
             overlay.appendChild(container);
             overlay.appendChild(globalCloseButton);
-            
-            // 初期状態を更新
-            updateScanModeButtons();
         });
     };
 
@@ -411,12 +294,12 @@
         // 503はメンテナンス中だからね
         if (response.status === 503) throw new Error("現在CHUNITHM-NETはメンテナンス中です！");
         if (!response.ok) throw new Error(`HTTPエラーが発生しました: ${response.status} (${url})`);
-        
+
         const htmlText = await response.text();
         if (htmlText.includes("再度ログインしてください")) {
             throw new Error("セッションが切れました。CHUNITHM-NETに再度ログインしてください。(他の場所でログインした場合もセッションが無効になります)");
         }
-        
+
         return new DOMParser().parseFromString(htmlText, 'text/html');
     };
 
@@ -476,31 +359,7 @@
         }
         return { artist, jacketUrl, playCount };
     };
-    /*
-    const calculateRating = (score, constant) => {
-        if (!constant) return 0.0;
-        constant = parseFloat(constant);
-        let ratingValue = 0.0;
-        if (score >= 1009000) {
-            ratingValue = constant + 2.15;
-        } else if (score >= 1007500) {
-            ratingValue = constant + 2.0 + (score - 1007500) * 0.0001;
-        } else if (score >= 1005000) {
-            ratingValue = constant + 1.5 + (score - 1005000) * 0.0002;
-        } else if (score >= 1000000) {
-            ratingValue = constant + 1.0 + (score - 1000000) * 0.0001;
-        } else if (score >= 975000) {
-            ratingValue = constant + (score - 975000) / 25000;
-        } else if (score >= 950000) {
-            ratingValue = constant - 1.5 + (score - 950000) / 25000 * 1.5;
-        } else if (score >= 925000) {
-            ratingValue = constant - 3.0 + (score - 925000) / 25000 * 1.5;
-        } else if (score >= 900000) {
-            ratingValue = constant - 5.0 + (score - 900000) / 25000 * 2.0;
-        }
 
-        return Math.round(ratingValue * 100) / 100;
-    };:*/
     const calculateRating = (score, constant) => {
         if (!constant) return 0.0;
         constant = parseFloat(constant);
@@ -567,121 +426,6 @@
         });
     };
 
-    /**
-     * 無料ユーザー向けの楽曲データ取得
-     */
-    const fetchAllSongsForFreeUser = async (bestConstThreshold, newConstThreshold, delay, constData) => {
-        updateMessage("ランキングページにアクセス中...", 5);
-        const token = document.cookie.split('; ').find(row => row.startsWith('_t=')).split('=')[1];
-        await fetch(URL_RANKING_MASTER_SEND, {
-            method: 'POST',
-            body: new URLSearchParams({ genre: '99', token: token })
-        });
-        const rankingDoc = await fetchDocument(URL_RANKING_MASTER);
-        if (isAborted) return null;
-
-        const songForms = rankingDoc.querySelectorAll('form[action$="sendRankingDetail/"]');
-        let initialSongList = [];
-        songForms.forEach(form => {
-            initialSongList.push({
-                title: form.querySelector('.music_title').innerText,
-                params: {
-                    idx: form.querySelector('input[name="idx"]').value,
-                    token: form.querySelector('input[name="token"]').value,
-                    genre: form.querySelector('input[name="genre"]').value,
-                    diff: form.querySelector('input[name="diff"]').value,
-                }
-            });
-        });
-
-        updateMessage("定数データと楽曲リストを照合中...", 10);
-        let filteredNewSongs = [];
-        let filteredOldSongs = [];
-        const diffMap = { 'MAS': '3', 'EXP': '2', 'ULT': '4' };
-
-        for (const songData of constData) {
-            const isNewSong = songData.version === CURRENT_VERSION;
-            const threshold = isNewSong ? newConstThreshold : bestConstThreshold;
-
-            if (songData.const >= threshold) {
-                const initialSong = initialSongList.find(s => s.title === songData.title);
-                if (initialSong && diffMap[songData.diff]) {
-                    const songObject = {
-                        title: songData.title,
-                        artist: songData.artist,
-                        difficulty: { 'MAS': 'MASTER', 'EXP': 'EXPERT', 'ULT': 'ULTIMA' }[songData.diff],
-                        const: songData.const,
-                        jacketUrl: `https://new.chunithm-net.com/chuni-mobile/images/jacket/${songData.img}.jpg`,
-                        playCount: 'N/A',
-                        params: { ...initialSong.params, diff: diffMap[songData.diff] }
-                    };
-                    
-                    if (isNewSong) {
-                        filteredNewSongs.push(songObject);
-                    } else {
-                        filteredOldSongs.push(songObject);
-                    }
-                }
-            }
-        }
-        
-        // 重複削除
-        filteredNewSongs = filteredNewSongs.filter((song, index, self) => index === self.findIndex(s => s.title === song.title && s.difficulty === song.difficulty));
-        filteredOldSongs = filteredOldSongs.filter((song, index, self) => index === self.findIndex(s => s.title === song.title && s.difficulty === song.difficulty));
-
-        const processSongList = async (list, type, startProgress, progressShare) => {
-            let detailedSongs = [];
-            const total = list.length;
-            for (let i = 0; i < total; i++) {
-                if (isAborted) break;
-                const song = list[i];
-                const progress = startProgress + (i / total) * progressShare;
-                if (i > 0 && delay > 0) {
-                    updateMessage(`待機中... (${delay.toFixed(1)}秒) - (${i}/${total})`, progress);
-                    await sleep(delay * 1000);
-                }
-                if (isAborted) break;
-                try {
-                    updateMessage(`${type}取得中: ${song.title} [${song.difficulty}] (${i + 1}/${total})`, progress);
-                    await fetch(URL_RANKING_DETAIL_SEND, { method: 'POST', body: new URLSearchParams(song.params) });
-                    let scoreDoc;
-                    if (song.difficulty === 'ULTIMA') {
-                        await fetch(URL_RANKING_ULTIMA_SEND, { method: 'POST', body: new URLSearchParams({ ...song.params, category: '1', region: '1' }) });
-                        scoreDoc = await fetchDocument(URL_RANKING_DETAIL);
-                    } else if (song.difficulty === 'EXPERT') {
-                        await fetch(URL_RANKING_EXPERT_SEND, { method: 'POST', body: new URLSearchParams({ ...song.params, category: '1', region: '1' }) });
-                        scoreDoc = await fetchDocument(URL_RANKING_DETAIL);
-                    } else {
-                        scoreDoc = await fetchDocument(URL_RANKING_DETAIL);
-                    }
-                    const scoreElement = scoreDoc.querySelector('.rank_playdata_highscore .text_b');
-                    const jacketElement = scoreDoc.querySelector('.play_jacket_img img');
-                    if (scoreElement) {
-                        const score_str = scoreElement.innerText;
-                        const score_int = parseInt(score_str.replace(/,/g, ''), 10);
-                        if (score_int > 0) {
-                            const finalJacketUrl = jacketElement ? jacketElement.src : song.jacketUrl;
-                            detailedSongs.push({ ...song, score_str, score_int, jacketUrl: finalJacketUrl });
-                        }
-                    } else {
-                        detailedSongs.push({ ...song, score_str: '0', score_int: 0 });
-                    }
-                } catch (e) {
-                    console.warn(`スコア取得失敗: ${song.title}`, e);
-                }
-            }
-            return detailedSongs;
-        };
-
-        const detailedNewSongs = await processSongList(filteredNewSongs, "新曲枠", 15, 40);
-        if (isAborted) return null;
-        const detailedOldSongs = await processSongList(filteredOldSongs, "BEST枠", 55, 40);
-        if (isAborted) return null;
-        
-        return { detailedNewSongs, detailedOldSongs };
-    };
-
-
     const generateImage = async (playerData, bestList, recentList, mode) => {
         await document.fonts.load('bold 20px "Noto Sans JP"');
         await document.fonts.load('20px "Noto Sans JP"');
@@ -739,11 +483,6 @@
             return { finalY: currentY, lines: lineCount };
         };
 
-        /*const calculateAverageRating = (list) => {
-            if (!list || list.length === 0) return 0.0;
-            const total = list.reduce((sum, song) => sum + song.rating, 0);
-            return total / list.length;
-        };*/
         const calculateAverageRating = (list) => {
             if (!list || list.length === 0) {
                 return 0.0;
@@ -753,7 +492,7 @@
             return total / list.length;
         };
 
-        // --- レイアウト定数 --- デザインは僕のはんちゅう外だから、概要だけ伝えてAIに決めてもらった。コメントはそのまま残す
+        // --- レイアウト定数 ---
         let WIDTH, COLS, BLOCK_WIDTH, CENTER_GAP;
         const PADDING = 30;
         const HEADER_HEIGHT = 280;
@@ -840,7 +579,6 @@
         ctx.fillStyle = '#00FFFF';
         ctx.shadowColor = 'rgba(0, 255, 255, 0.9)';
         ctx.shadowBlur = 20;
-        //ctx.fillText(playerData.rating, rightX, headerY + 130);
         const formattedRating = parseFloat(playerData.rating).toFixed(2);
         ctx.fillText(formattedRating, rightX, headerY + 130);
         ctx.shadowBlur = 0;
@@ -1042,8 +780,8 @@
         }
 
         // --- フッター描画 ---
-        const footerFontSize = 40; 
-        const lineHeight = 52;     
+        const footerFontSize = 40;
+        const lineHeight = 52;
 
         ctx.font = `bold ${footerFontSize}px ${FONT_FAMILY}`;
         ctx.fillStyle = 'rgba(71, 71, 71, 0.7)';
@@ -1155,7 +893,7 @@
 
     // --- メイン処理 ---
     try {
-        const { mode, delay, scanMode, bestConstThreshold, newConstThreshold } = await askForSettings();
+        const { mode, delay } = await askForSettings();
 
         if (isAborted) return;
 
@@ -1197,64 +935,42 @@
         const constData = await fetch(CONST_DATA_URL).then(res => res.json());
         if (isAborted) return;
 
-        let finalBestList = [];
-        let finalRecentList = [];
+        let detailedSongs = [];
+        updateMessage("BEST枠の曲リストを取得中...", 15);
+        const bestList = await scrapeRatingList(URL_RATING_BEST);
+        if (isAborted) return;
 
-        if (scanMode === 'free') {
-            updateMessage(`無料モード: ランキングから曲を検索します...`, 12);
-            const result = await fetchAllSongsForFreeUser(bestConstThreshold, newConstThreshold, delay, constData);
-            if (isAborted || !result) return;
-            
-            const { detailedNewSongs, detailedOldSongs } = result;
+        updateMessage("新曲枠の曲リストを取得中...", 20);
+        const recentList = await scrapeRatingList(URL_RATING_RECENT);
+        if (isAborted) return;
 
-            updateMessage("レーティングを計算中...", 98);
-            detailedNewSongs.forEach(song => song.rating = calculateRating(song.score_int, song.const));
-            detailedOldSongs.forEach(song => song.rating = calculateRating(song.score_int, song.const));
-            
-            detailedNewSongs.sort((a, b) => b.rating - a.rating);
-            detailedOldSongs.sort((a, b) => b.rating - a.rating);
+        const allSongs = [...bestList, ...recentList];
 
-            finalBestList = detailedOldSongs.slice(0, 30);
-            finalRecentList = detailedNewSongs.slice(0, 20);
+        for (let i = 0; i < allSongs.length; i++) {
+            if (isAborted) break;
+            const song = allSongs[i];
+            const progress = 20 + (i / allSongs.length) * 80;
 
-        } else { // 有料ユーザー向け、というかみんなこっちを使った方が絶対いい
-            let detailedSongs = [];
-            updateMessage("BEST枠の曲リストを取得中...", 15);
-            const bestList = await scrapeRatingList(URL_RATING_BEST);
-            if (isAborted) return;
-
-            updateMessage("新曲枠の曲リストを取得中...", 20);
-            const recentList = await scrapeRatingList(URL_RATING_RECENT);
-            if (isAborted) return;
-
-            const allSongs = [...bestList, ...recentList];
-
-            for (let i = 0; i < allSongs.length; i++) {
-                if (isAborted) break;
-                const song = allSongs[i];
-                const progress = 20 + (i / allSongs.length) * 80;
-
-                if (i > 0 && delay > 0) {
-                    updateMessage(`待機中... (${delay.toFixed(1)}秒) - (${i}/${allSongs.length})`, progress);
-                    await sleep(delay * 1000);
-                }
-
-                if (isAborted) break;
-
-                updateMessage(`楽曲詳細を取得中: ${song.title} (${i + 1}/${allSongs.length})`, progress);
-                const details = await scrapeMusicDetail(song.params);
-
-                const difficultyMapToJson = { 'MASTER': 'MAS', 'EXPERT': 'EXP', 'ULTIMA': 'ULT', 'ADVANCED': 'ADV', 'BASIC': 'BAS' };
-                const diffAbbreviation = difficultyMapToJson[song.difficulty];
-                const matchedConst = constData.find(m => m.title === song.title && m.diff === diffAbbreviation)?.const;
-                const rating = calculateRating(song.score_int, matchedConst);
-
-                detailedSongs.push({ ...song, ...details, 'const': matchedConst || 0.0, rating });
+            if (i > 0 && delay > 0) {
+                updateMessage(`待機中... (${delay.toFixed(1)}秒) - (${i}/${allSongs.length})`, progress);
+                await sleep(delay * 1000);
             }
-            if (isAborted) return;
-            finalBestList = detailedSongs.slice(0, bestList.length);
-            finalRecentList = detailedSongs.slice(bestList.length);
+
+            if (isAborted) break;
+
+            updateMessage(`楽曲詳細を取得中: ${song.title} (${i + 1}/${allSongs.length})`, progress);
+            const details = await scrapeMusicDetail(song.params);
+
+            const difficultyMapToJson = { 'MASTER': 'MAS', 'EXPERT': 'EXP', 'ULTIMA': 'ULT', 'ADVANCED': 'ADV', 'BASIC': 'BAS' };
+            const diffAbbreviation = difficultyMapToJson[song.difficulty];
+            const matchedConst = constData.find(m => m.title === song.title && m.diff === diffAbbreviation)?.const;
+            const rating = calculateRating(song.score_int, matchedConst);
+
+            detailedSongs.push({ ...song, ...details, 'const': matchedConst || 0.0, rating });
         }
+        if (isAborted) return;
+        const finalBestList = detailedSongs.slice(0, bestList.length);
+        const finalRecentList = detailedSongs.slice(bestList.length);
 
         await generateImage(playerData, finalBestList, finalRecentList, mode);
 
