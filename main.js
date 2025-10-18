@@ -361,31 +361,27 @@
     };
 
     const calculateRating = (score, constant) => {
-        if (!constant) return 0.0;
-        constant = parseFloat(constant);
+        score = Number(score);
+        constant = Number(constant);
+        if (isNaN(score) || isNaN(constant)) return 0.00;
 
-        let ratingValue = 0.0;
+        let r = 0;
 
         if (score >= 1009000) {
-            ratingValue = constant + 2.15;
+            r = constant + 2.15;
+        } else if (score >= 1007500) {
+            r = constant + 2.00 + (score - 1007500) * 0.0001;
+        } else if (score >= 1005000) {
+            r = constant + 1.50 + (score - 1005000) * 0.0002;
+        } else if (score >= 1000000) {
+            r = constant + 1.00 + (score - 1000000) * 0.0001;
+        } else if (score >= 975000) {
+            r = constant + (score - 975000) / 25000;
+        } else {
+            r = constant - 3 * (975000 - score) / 250000;
         }
-        else if (score >= 1007500) {
-            ratingValue = constant + 2.0;
-        }
-        else if (score >= 1005000) {
-            ratingValue = constant + 1.5 + (score - 1005000) * 0.0002;
-        }
-        else if (score >= 1000000) {
-            ratingValue = constant + 1.0 + (score - 1000000) * 0.0001;
-        }
-        else if (score >= 975000) {
-            ratingValue = constant + (score - 975000) / 25000;
-        }
-        else {
-            ratingValue = constant - 3 * (975000 - score) / 250000;
-        }
-
-        return Math.floor(ratingValue * 100) / 100;
+        const internal = Math.floor(r * 10000) / 10000;
+        return Math.floor(internal * 100) / 100;
     };
 
     const getRankInfo = (score) => {
