@@ -368,18 +368,55 @@
         let r = 0;
 
         if (score >= 1009000) {
+            // SSS+: 譜面定数 + 2.15
             r = constant + 2.15;
         } else if (score >= 1007500) {
+            // SSS: 譜面定数 + 2.0 + (100点毎に+0.01)
             r = constant + 2.00 + (score - 1007500) * 0.0001;
         } else if (score >= 1005000) {
+            // SS+: 譜面定数 + 1.5 + (50点毎に+0.01)
             r = constant + 1.50 + (score - 1005000) * 0.0002;
         } else if (score >= 1000000) {
+            // SS: 譜面定数 + 1.0 + (100点毎に+0.01)
             r = constant + 1.00 + (score - 1000000) * 0.0001;
+        } else if (score >= 990000) {
+            // S+: 譜面定数 + 0.6 + (250点毎に+0.01)
+            r = constant + 0.60 + (score - 990000) * 0.00004;
         } else if (score >= 975000) {
+            // S: 譜面定数 + (975,000点を超えた分/25,000)
             r = constant + (score - 975000) / 25000;
+        } else if (score >= 950000) {
+            // AAA: 譜面定数 - 1.67 + (150点毎に+0.01)
+            r = constant - 1.67 + (score - 950000) / 15000;
+        } else if (score >= 925000) {
+            // AA: 譜面定数 - 3.34 + (150点毎に+0.01)
+            r = constant - 3.34 + (score - 925000) / 15000;
+        } else if (score >= 900000) {
+            // A: 譜面定数 - 5.0 + (150点毎に+0.01)
+            r = constant - 5.00 + (score - 900000) / 15000;
+        } else if (score >= 800000) {
+            // BBB: (譜面定数 - 5.0) / 2 + 加算分
+            // 800,000点時点で (譜面定数 - 5.0) / 2
+            // 2000/(譜面定数-5)点毎に+0.01 = (譜面定数-5)/2000点毎に+0.01
+            const base = (constant - 5.0) / 2;
+            const pointsPer001 = 2000 / (constant - 5.0);
+            const increment = (score - 800000) / pointsPer001 * 0.01;
+            r = base + increment;
+        } else if (score >= 500000) {
+            // C: 0 + 加算分
+            // 500,000点時点で 0
+            // 6000/(譜面定数-5)点毎に+0.01 = (譜面定数-5)/6000点毎に+0.01
+            const pointsPer001 = 6000 / (constant - 5.0);
+            const increment = (score - 500000) / pointsPer001 * 0.01;
+            r = increment;
         } else {
-            r = constant - 3 * (975000 - score) / 250000;
+            // 500,000未満は0
+            r = 0;
         }
+
+        // 0以下の場合は0になる
+        if (r < 0) r = 0;
+
         const internal = Math.floor(r * 10000) / 10000;
         return Math.floor(internal * 100) / 100;
     };
